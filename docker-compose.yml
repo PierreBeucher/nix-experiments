@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+
+  nix-serve:
+    container_name: nix-serve
+    image: nix-serve:local
+    command: [ "-p", "80"]
+    ports:
+    - 80:80
+    volumes:
+    - nix-serve-store:/nix/store
+      
+
+  # nix build --extra-experimental-features nix-command --extra-experimental-features flakes .#img-nix-serve --option extra-binary-caches http://nix-serve
+  nix-builder:
+    image: nixos/nix
+    container_name: builder
+    command: [ "sleep", "9999"]
+    volumes:
+    - $PWD:/experiment
+    - $PWD/nix.conf:/etc/nix/nix.conf
+    working_dir: /experiment
+    stop_grace_period: 1s
+
+volumes:
+  nix-serve-store:
+
+# networks:
+#   nix-experiment:
+#     external: true
+#     name: nix-experiment
+
+
