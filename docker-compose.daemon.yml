@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+      
+  # plain nix-daemon
+  daemon:
+    container_name: daemon
+    image: nixos/nix:2.13.2@sha256:af1b4e1eb819bf17374141fc4c3b72fe56e05f09e91b99062b66160a86c5d155
+    entrypoint: [ "/nix/store/lsr79q5xqd9dv97wn87x12kzax8s8i1s-nix-2.13.2/bin/nix-daemon" ]
+    privileged: true
+    volumes:
+    - $PWD/nix-daemon.conf:/etc/nix/nix.conf
+    # Volume populated on startup with content of image
+    # Mut be re-created if image (Nix version) changes
+    # Also container socket /nix/var/nix/daemon-socket/socket
+    - nix-vol:/nix
+
+  nix-builder:
+    # Must use same image as daemon
+    image: nixos/nix:2.13.2@sha256:af1b4e1eb819bf17374141fc4c3b72fe56e05f09e91b99062b66160a86c5d155
+    container_name: builder
+    command: [ "sleep", "9999"]
+    depends_on:
+      daemon: 
+        condition: service_started
+    environment:
+      NIX_REMOTE: daemon
+    volumes:
+    # Mount RO to make sure daemon is always used
+    - nix-vol:/nix:ro
+    - $PWD/nix-daemon.conf:/etc/nix/nix.conf:ro
+    - $PWD:/experiment
+    working_dir: /experiment
+    stop_grace_period: 1s
+
+volumes:
+  nix-vol:

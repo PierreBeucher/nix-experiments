@@ -2,33 +2,32 @@ version: '3'
 
 services:
 
+  # Use nix-serve https://github.com/edolstra/nix-serve
+  # Does work but not sure store can be shared
+  # Building Docker images doesn't work as kvm feature is needed and couldn't find a way to configure it in Docker with nix-serve
   nix-serve:
     container_name: nix-serve
     image: nix-serve:local
     command: [ "-p", "80"]
+    privileged: true
     ports:
     - 80:80
     volumes:
     - nix-serve-store:/nix/store
-      
 
-  # nix build --extra-experimental-features nix-command --extra-experimental-features flakes .#img-nix-serve --option extra-binary-caches http://nix-serve
+  # nix build .#dummy
   nix-builder:
     image: nixos/nix
     container_name: builder
     command: [ "sleep", "9999"]
+    environment:
+      NIX_DAEMON: unix://nix/var/nix/daemon-socket/socket
     volumes:
     - $PWD:/experiment
     - $PWD/nix.conf:/etc/nix/nix.conf
+    - nix-daemon-socket:/nix/var/nix/daemon-socket
     working_dir: /experiment
     stop_grace_period: 1s
 
 volumes:
   nix-serve-store:
-
-# networks:
-#   nix-experiment:
-#     external: true
-#     name: nix-experiment
-
-

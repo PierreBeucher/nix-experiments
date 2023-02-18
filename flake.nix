@@ -22,35 +22,14 @@
         
         packages = rec {
 
-            default = dummy;
+            default = hello;
 
-            # Dummy package to test our Nix setup works
-            dummy = pkgs.dockerTools.buildImage {
-                name = "dummy";
-                tag = "local";
-
-                # Not strictly necessary but nice for debugging
-                copyToRoot = with pkgs; [
-                    coreutils
-                    dockerTools.usrBinEnv
-                    dockerTools.binSh
-                ];
-
-                runAsRoot = ''
-                    #!/bin/sh
-                    ${pkgs.dockerTools.shadowSetup}
-                '';
-
-                config = {
-                    Entrypoint = [ "/bin/sh" "-c" ];
-                };
-            };
-    
+            hello = pkgs.hello;
+            
             img-nix-serve = pkgs.dockerTools.buildImage {
                 name = "nix-serve";
                 tag = "local";
 
-                # fromImage = nixFromDockerHub;
 
                 # Not strictly necessary but nice for debugging
                 copyToRoot = with pkgs; [
@@ -86,6 +65,3 @@
       }
     );    
 }
-
-# 9s0anw8p39klh6p8v0g21qf3c21xqnib-nix-serve-0.2-e4675e3
-# mzm0x1j58m0ldfrxwgj1kdp6yibiz46w-nix-serve-0.2-e4675e3
